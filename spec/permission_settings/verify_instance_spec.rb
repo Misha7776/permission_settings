@@ -10,21 +10,21 @@ RSpec.describe PermissionSettings::VerifyInstance do
   end
 
   context 'when role permissions are present' do
-    context 'when permission is false', role: :client, keys: %i[access alerts] do
+    context 'when permission is false', role: :admin, keys: %i[read notifications] do
       it 'returns true' do
-        expect(response).to be false
+        expect(response).to be true
       end
     end
 
-    context 'when permission is true', role: :client, keys: %i[access notifications] do
+    context 'when permission is true', role: :manager, keys: %i[delete payments] do
       it 'returns true' do
-        expect(response).to be true
+        expect(response).to be false
       end
     end
   end
 
   context 'when role permissions are not present' do
-    it 'returns an error', role: :talent, keys: %i[access alerts] do
+    it 'returns an error', role: :client, keys: %i[read alerts] do
       expect { response }.to raise_error(PermissionSettings::NotFoundError)
     end
   end

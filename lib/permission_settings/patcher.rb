@@ -1,10 +1,7 @@
 # frozen_string_literal: true
 
+require 'byebug'
 require_relative 'verify_instance'
-require_relative 'verify_collection'
-require 'rails-settings/configuration'
-require 'rails-settings/base'
-require 'rails-settings/scopes'
 
 module PermissionSettings
   # Class that defines core functionality
@@ -22,42 +19,30 @@ module PermissionSettings
     def call
       setup_settings_interface
       setup_instance_verification
-      # setup_collection_verification
     end
 
     private
 
     def setup_settings_interface
       klass.class_eval do
-        def self.has_settings(*args, &block)
-          RailsSettings::Configuration.new(*args.unshift(self), &block)
-
-          include RailsSettings::Base
-          extend RailsSettings::Scopes
+        has_settings do |s|
+          s.key PermissionSettings.configuration.scope_name(self),
+                defaults: PermissionSettings.configuration.load_permissions_file(self)
         end
       end
     end
 
     def setup_instance_verification
+      role_method = PermissionSettings.configuration.role_access_method
+
       klass.class_eval do
         define_method(:can?) do |*keys, resource: nil, &block|
-          PermissionSettings::VerifyInstance.call(keys, role: send(:role), resource: resource, &block)
+          PermissionSettings::VerifyInstance.call(keys, role: send(role_method), resource: resource, &block)
         rescue NameError => _e
           # TODO: Add logger for errors
           false
         end
       end
     end
-
-    # def setup_collection_verification
-    #   klass.instance_eval do
-    #     define_singleton_method(:with_ability_to) do |*keys, resource: nil, roles: nil|
-    #       PermissionSettings::VerifyCollection.call(all, keys, role: send(:role), resource: resource, roles: roles)
-    #     rescue NameError => _e
-    #       # TODO: Add logger for errors
-    #       all
-    #     end
-    #   end
-    # end
   end
 end
