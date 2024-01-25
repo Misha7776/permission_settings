@@ -3,15 +3,13 @@
 require 'active_support/hash_with_indifferent_access'
 
 module PermissionSettings
-  # add comments
   class Verify
-    SETTINGS_SCOPE = :permissions # some day this will be a config option
-
     def initialize(permission_keys, role, resource, &block)
       @permission_keys = permission_keys.map(&:to_s)
       @role = role
       @resource = resource
       @block = block
+      @scope = PermissionSettings.configuration.scope_name(resource.class)
     end
 
     def self.call(permission_keys = [], role: nil, resource: nil, &block)
@@ -25,7 +23,7 @@ module PermissionSettings
 
     private
 
-    attr_reader :permission_keys, :role, :resource, :block, :permission_value
+    attr_reader :permission_keys, :role, :resource, :block, :permission_value, :scope
 
     def extract_permission_value
       @permission_value = fetch_permission_value
@@ -59,7 +57,7 @@ module PermissionSettings
     end
 
     def fetch_permissions
-      resource.settings(SETTINGS_SCOPE).value.presence || resource.default_settings[SETTINGS_SCOPE]
+      resource.settings(scope).value.presence || resource.default_settings[scope]
     end
 
     def raise_not_found_error
