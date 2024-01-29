@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'byebug'
 require 'active_support/hash_with_indifferent_access'
 
 module PermissionSettings
@@ -26,38 +27,29 @@ module PermissionSettings
     attr_reader :permission_keys, :role, :resource, :block, :permission_value, :scope
 
     def extract_permission_value
-      @permission_value = fetch_permission_value
+      fetch_record_permission_value
+      fetch_default_permissions_value if @permission_value.nil?
     end
 
-    def fetch_permission_value
-      # If edit permission is requested, access must also be True
-      return evaluate_edit_permission_request if edit_request?
-
-      action_permitted?(*permission_keys)
+    def fetch_record_permission_value
+      @permission_value = action_permitted?(*permission_keys,
+                                            resource_permissions.presence || default_permissions)
     end
 
-    def evaluate_edit_permission_request
-      action_permitted?('access', permission_keys.last) && action_permitted?(*permission_keys)
+    def fetch_default_permissions_value
+      @permission_value = action_permitted?(*permission_keys, default_permissions)
     end
 
-    def edit_request?
-      permission_keys.include?('edit')
-    end
-
-    def action_permitted?(*setting_keys)
-      stored_permissions.dig(role, *setting_keys.reverse)
-    end
-
-    def stored_permissions
-      @stored_permissions ||= resource_permissions
+    def action_permitted?(*permission_keys, permissions)
+      permissions.dig(role, *permission_keys.reverse)
     end
 
     def resource_permissions
-      ActiveSupport::HashWithIndifferentAccess.new(fetch_permissions)
+      ActiveSupport::HashWithIndifferentAccess.new(resource.settings(scope).value)
     end
 
-    def fetch_permissions
-      resource.settings(scope).value.presence || resource.default_settings[scope]
+    def default_permissions
+      ActiveSupport::HashWithIndifferentAccess.new(resource.default_settings[scope])
     end
 
     def raise_not_found_error

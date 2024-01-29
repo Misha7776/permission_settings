@@ -9,6 +9,10 @@ RSpec.describe PermissionSettings::VerifyInstance do
     described_class.call(ex.metadata[:keys], role: ex.metadata[:role], resource: User.new)
   end
 
+  before do
+    User.include(PermissionSettings)
+  end
+
   context 'when role permissions are present' do
     context 'when permission is false', role: :admin, keys: %i[read notifications] do
       it 'returns true' do

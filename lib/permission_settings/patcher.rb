@@ -37,10 +37,10 @@ module PermissionSettings
 
       klass.class_eval do
         define_method(:can?) do |*keys, resource: nil, &block|
-          PermissionSettings::VerifyInstance.call(keys, role: send(role_method), resource: resource, &block)
-        rescue NameError => _e
-          # TODO: Add logger for errors
-          false
+          PermissionSettings::VerifyInstance.call(keys,
+                                                  role: send(role_method),
+                                                  resource: resource,
+                                                  &block)
         end
       end
     end
