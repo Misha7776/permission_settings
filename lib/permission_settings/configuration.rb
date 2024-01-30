@@ -28,7 +28,11 @@ module PermissionSettings
     end
 
     def load_permissions_file(klass)
-      RUBY_VERSION.to_f >= 3.1 ? YAML.load_file(permission_file_path(klass), aliases: true) : YAML.load_file(permission_file_path(klass))
+      if RUBY_VERSION.to_f >= 3.1
+        YAML.load_file(permission_file_path(klass), aliases: true)
+      else
+        YAML.load_file(permission_file_path(klass))
+      end
     end
 
     def permission_file_path(klass)

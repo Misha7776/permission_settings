@@ -15,7 +15,7 @@ RSpec.configure do |config|
     c.syntax = :expect
   end
 
-  config.before(:each) { DbConfig.clear_db }
+  config.before { DbConfig.clear_db }
 
   config.after(:suite) { DbConfig.rollback_db }
 end
