@@ -5,11 +5,11 @@ require_relative 'support/user'
 
 RSpec.describe PermissionSettings do
   before do
-    User.include(PermissionSettings)
+    User.include(described_class)
   end
 
   it 'has a version number' do
-    expect(PermissionSettings::VERSION).not_to be nil
+    expect(PermissionSettings::VERSION).not_to be_nil
   end
 
   describe 'included' do
@@ -19,10 +19,19 @@ RSpec.describe PermissionSettings do
 
     it 'response to has_settings class method' do
       expect(User.respond_to?(:has_settings)).to be true
-      expect(User.respond_to?(:default_settings)).to be true
-      expect(User.new.respond_to?(:default_settings)).to be true
-      expect(User.new.respond_to?(:settings, PermissionSettings.configuration.scope_name(User)))
+    end
+
+    it 'response to settings instance method' do
+      expect(User.new.respond_to?(:settings, described_class.configuration.scope_name(User)))
         .to be true
+    end
+
+    it 'response to default_settings instance method' do
+      expect(User.new.respond_to?(:default_settings)).to be true
+    end
+
+    it 'response to default_settings class method' do
+      expect(User.respond_to?(:default_settings)).to be true
     end
   end
 
@@ -31,16 +40,12 @@ RSpec.describe PermissionSettings do
     let(:manager) { User.create(role: :manager) }
 
     context 'when role permissions are present' do
-      context 'when permission is false' do
-        it 'returns true' do
-          expect(admin.can?(:read, :notifications, resource: manager)).to be true
-        end
+      it 'returns true' do
+        expect(admin.can?(:read, :notifications, resource: manager)).to be true
       end
 
-      context 'when permission is true' do
-        it 'returns true' do
-          expect(manager.can?(:delete, :notifications, resource: admin)).to be false
-        end
+      it 'returns false' do
+        expect(manager.can?(:delete, :notifications, resource: admin)).to be false
       end
     end
 
@@ -52,72 +57,68 @@ RSpec.describe PermissionSettings do
     end
   end
 
-  describe 'configure' do
-    context 'permissions directory path' do
-      context 'as default' do
-        it 'has permissions_dir_path default configuration' do
-          expect(described_class.configuration.permissions_dir_path)
-            .to eq PermissionSettings::Configuration::DEFAULT_PERMISSION_FILE_PATH
-        end
-      end
-
-      context 'as custom' do
-        let(:custom_permissions_dir_path) { 'config/custom_permissions/' }
-
-        before do
-          described_class.configure do |config|
-            config.permissions_dir_path = custom_permissions_dir_path
-          end
-        end
-
-        it 'has permissions_dir_path custom configuration' do
-          expect(described_class.configuration.permissions_dir_path)
-            .to eq custom_permissions_dir_path
-        end
-      end
-
-      context 'when permissions directory does not exist' do
-        let(:custom_permissions_dir_path) { 'config/super_admin_permissions/' }
-
-        it 'raises PermissionsDirNotFound error' do
-          expect do
-            described_class.configure do |config|
-              config.permissions_dir_path = custom_permissions_dir_path
-            end
-          end
-            .to raise_error(PermissionSettings::Configuration::PermissionsDirNotFound)
-        end
+  describe 'configure permissions directory path' do
+    context 'when default' do
+      it 'has permissions_dir_path default configuration' do
+        expect(described_class.configuration.permissions_dir_path)
+          .to eq PermissionSettings::Configuration::DEFAULT_PERMISSION_FILE_PATH
       end
     end
 
-    context 'role access method' do
-      context 'as default' do
-        it 'has role_access_method default configuration' do
-          expect(described_class.configuration.role_access_method)
-            .to eq PermissionSettings::Configuration::DEFAULT_ROLE_ACCESS_METHOD
+    context 'when custom' do
+      let(:custom_permissions_dir_path) { 'config/custom_permissions/' }
+
+      before do
+        described_class.configure do |config|
+          config.permissions_dir_path = custom_permissions_dir_path
         end
       end
 
-      context 'as custom' do
-        let(:custom_role_access_method) { :custom_role_method }
+      it 'has permissions_dir_path custom configuration' do
+        expect(described_class.configuration.permissions_dir_path)
+          .to eq custom_permissions_dir_path
+      end
+    end
 
-        before do
-          described_class.configure do |config|
-            config.role_access_method = custom_role_access_method
-          end
+    context 'when permissions directory does not exist' do
+      let(:custom_permissions_dir_path) { 'config/super_admin_permissions/' }
+      let(:configuration) do
+        described_class.configure do |config|
+          config.permissions_dir_path = custom_permissions_dir_path
         end
+      end
 
-        it 'has role_access_method custom configuration' do
-          expect(described_class.configuration.role_access_method)
-            .to eq custom_role_access_method
+      it 'raises PermissionsDirNotFound error' do
+        expect { configuration }.to raise_error(PermissionSettings::Configuration::PermissionsDirNotFound)
+      end
+    end
+
+    context 'when role access method is default' do
+      it 'has role_access_method default configuration' do
+        expect(described_class.configuration.role_access_method)
+          .to eq PermissionSettings::Configuration::DEFAULT_ROLE_ACCESS_METHOD
+      end
+    end
+
+    context 'when role access method is custom' do
+      let(:custom_role_access_method) { :custom_role_method }
+
+      before do
+        described_class.configure do |config|
+          config.role_access_method = custom_role_access_method
         end
+      end
+
+      it 'has role_access_method custom configuration' do
+        expect(described_class.configuration.role_access_method)
+          .to eq custom_role_access_method
       end
     end
   end
 
   describe 'settings' do
     let(:source_class) { User }
-    let(:policy_scope) { PermissionSettings.configuration.scope_name(source_class) }
+    let(:policy_scope) { described_class.configuration.scope_name(source_class) }
 
     before do
       described_class.configure do |config|
