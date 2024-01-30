@@ -14,7 +14,7 @@ Gem::Specification.new do |spec|
   spec.required_ruby_version = '>= 3.0.0'
 
   spec.metadata['source_code_uri'] = spec.homepage
-  spec.metadata['changelog_uri'] = 'https://github.com/Misha7776/permission_settings/main/CHANGELOG.md'
+  spec.metadata['changelog_uri'] = 'https://github.com/Misha7776/permission_settings/blob/main/CHANGELOG.md'
   spec.metadata['rubygems_mfa_required'] = 'true'
 
   # Specify which files should be added to the gem when it is released.
