@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'byebug'
+# require 'byebug'
 
 require_relative 'permission_settings/version'
 require_relative 'permission_settings/patcher'

@@ -2,7 +2,7 @@
 
 require_relative '../support/user'
 require_relative '../../lib/permission_settings'
-require 'byebug'
+# require 'byebug'
 
 RSpec.describe PermissionSettings::VerifyInstance do
   subject(:response) do |ex|
