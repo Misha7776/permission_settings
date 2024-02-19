@@ -24,7 +24,7 @@ Generate and run the migration to create the settings table that is used to stor
 
 ```shell
 rails g rails_settings:migration
-rake db:migrate
+rails db:migrate
 ```
 
 ## Usage
@@ -36,7 +36,7 @@ You can configure the gem by calling `PermissionSettings.configure` method in an
 ```ruby 
 # config/initializers/permission_settings.rb
 
-PermissionSettings.configure do |_config|
+PermissionSettings.configure do |config|
   config.permissions_dir_path = 'config/permissions'
   config.role_access_method = :role
 end
@@ -98,7 +98,7 @@ end
 
 In order to check permissions of the resource instance you need to pass it as a named argument `resource` to the `#can?` method.
 
-Take into account that the resource model should have a `role` filed or method that returns a role name of the calling instance or you can configure the gem to use another method name by setting `role_access_method` configuration option.
+Take into account that the resource model should have a `role` field or method that returns a role name of the calling instance or you can configure the gem to use another method name by setting `role_access_method` configuration option.
 
 ### Checking permissions
 
@@ -111,8 +111,8 @@ user.can?(:read, :notifications, resource: person) # => true
 ```
 
 Method `can?` accepts 2 arguments:
-* `*permission_keys` - this keys will be used to find permissions in the settings. It can be a string or an array of strings. Required argument.
-* `*resource` - Named argument resource. Instance towards which the permissions will be checked. Required argument.
+* `*permission_keys` - this keys will be used to find permissions in the settings. It can be a string or an array of strings. `Required argument`.
+* `*resource` - Named argument resource. Instance towards which the permissions will be checked. `Required argument`.
 
 ### Accessing permissions
 
@@ -120,7 +120,7 @@ You can also access permissions of the resource or calling instance by calling `
 
 ```ruby
 person = Person.last # => #<Person id: 2, name: "Jane", role: "client">
-person.settings[PermissionSettings.configuration.scope_name].admin.notifications.read # => false
+person.permissions[:admin][:notifications][:read] # => false
 ```
 
 More about settings you can read in [Rails Settings](https://github.com/ledermann/rails-settings) gem documentation.
@@ -167,7 +167,8 @@ custom_permissions = {
 admin = User.first # => #<User id: 1, name: "John", role: "admin">
 person = Person.last # => #<User id: 2, name: "Jane", role: "client">
 
-person.settings(PermissionSettings.configuration.scope_name).update(custom_permissions)
+policy_scope = PermissionSettings.configuration.scope_name(User)
+person.settings(policy_scope).update(custom_permissions)
 
 admin.can?(:read, :notifications, resource: person) # => false
 

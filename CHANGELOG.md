@@ -1,4 +1,12 @@
-## [1.0.1] - 2024-02-19
+## [1.0.3] - 2024-02-19
+
+- Readme update
+- Better PermissionsDirNotFound error message and handling
+- Added `permissions` method to get permissions of the calling instance
+- Added test core coverage
+
+
+## [1.0.2] - 2024-02-19
 
 - Commented out `byebug` in the code
 

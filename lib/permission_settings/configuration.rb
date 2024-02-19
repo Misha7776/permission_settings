@@ -9,18 +9,11 @@ module PermissionSettings
     DEFAULT_PERMISSION_FILE_PATH = 'config/permissions'
     DEFAULT_ROLE_ACCESS_METHOD = :role
 
-    attr_accessor :role_access_method
-    attr_reader :permissions_dir_path
+    attr_accessor :role_access_method, :permissions_dir_path
 
     def initialize
       @permissions_dir_path = DEFAULT_PERMISSION_FILE_PATH
       @role_access_method = DEFAULT_ROLE_ACCESS_METHOD
-    end
-
-    def permissions_dir_path=(path)
-      raise PermissionsDirNotFound, 'Permissions directory not found' unless Dir.exist?(path)
-
-      @permissions_dir_path = path
     end
 
     def scope_name(klass)
