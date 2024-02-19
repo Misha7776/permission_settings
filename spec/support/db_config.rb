@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'byebug'
+# require 'byebug'
 require 'active_record'
 require 'generators/rails_settings/migration/templates/migration'
 require 'rails-settings'

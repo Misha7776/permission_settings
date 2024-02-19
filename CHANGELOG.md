@@ -1,4 +1,10 @@
-## [Unreleased]
+## [1.0.1] - 2024-02-19
+
+- Commented out `byebug` in the code
+
+## [1.0.1] - 2024-02-01
+
+- Changes in gemspec metadata
 
 ## [1.0.0] - 2024-01-30
 

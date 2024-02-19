@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'byebug'
+# require 'byebug'
 require 'active_support/hash_with_indifferent_access'
 
 module PermissionSettings

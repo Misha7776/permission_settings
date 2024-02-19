@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'byebug'
+# require 'byebug'
 require_relative 'support/user'
 
 RSpec.describe PermissionSettings do
