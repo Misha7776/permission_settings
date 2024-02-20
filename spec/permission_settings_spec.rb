@@ -21,9 +21,13 @@ RSpec.describe PermissionSettings do
       expect(User.respond_to?(:has_settings)).to be true
     end
 
-    it 'response to settings instance method' do
+    it 'response to settings instance method by scope' do
       expect(User.new.respond_to?(:settings, described_class.configuration.scope_name(User)))
         .to be true
+    end
+
+    it 'response to permissions instance method' do
+      expect(User.new.respond_to?(:permissions)).to be true
     end
 
     it 'response to default_settings instance method' do
@@ -66,30 +70,41 @@ RSpec.describe PermissionSettings do
     end
 
     context 'when custom' do
-      let(:custom_permissions_dir_path) { 'config/custom_permissions/' }
+      let(:custom_dir_path) { 'config/custom_permissions/' }
 
       before do
         described_class.configure do |config|
-          config.permissions_dir_path = custom_permissions_dir_path
+          config.permissions_dir_path = custom_dir_path
         end
       end
 
       it 'has permissions_dir_path custom configuration' do
         expect(described_class.configuration.permissions_dir_path)
-          .to eq custom_permissions_dir_path
+          .to eq custom_dir_path
       end
     end
 
     context 'when permissions directory does not exist' do
-      let(:custom_permissions_dir_path) { 'config/super_admin_permissions/' }
-      let(:configuration) do
+      let(:custom_dir_path) { 'config/super_admin_permissions/' }
+      let(:error_message) do
+        "Permissions config directory not found. Please create a directory at #{custom_dir_path} and add permission files there."
+      end
+      let(:error_class) { PermissionSettings::Configuration::PermissionsDirNotFound }
+
+      before do
         described_class.configure do |config|
-          config.permissions_dir_path = custom_permissions_dir_path
+          config.permissions_dir_path = custom_dir_path
+        end
+      end
+
+      after do
+        described_class.configure do |config|
+          config.permissions_dir_path = PermissionSettings::Configuration::DEFAULT_PERMISSION_FILE_PATH
         end
       end
 
       it 'raises PermissionsDirNotFound error' do
-        expect { configuration }.to raise_error(PermissionSettings::Configuration::PermissionsDirNotFound)
+        expect { User.include(described_class) }.to raise_error(error_class, error_message)
       end
     end
 
@@ -159,6 +174,21 @@ RSpec.describe PermissionSettings do
         expect(admin.can?(:read, :notifications, resource: client)).to be false
         client.settings(policy_scope).update({ admin: { notifications: nil } })
         expect(admin.can?(:read, :notifications, resource: client)).to be true
+      end
+    end
+  end
+
+  describe 'permissions instance method' do
+    let(:admin) { User.create(role: :admin) }
+    let(:scope) { described_class.configuration.scope_name(User) }
+
+    context 'when permissions instance method is called' do
+      it 'returns permissions hash as Hash With Indifferent Access' do
+        expect(admin.permissions).to be_a(ActiveSupport::HashWithIndifferentAccess)
+      end
+
+      it 'returns requested permission value' do
+        expect(admin.permissions[:admin][:notifications][:read]).to be true
       end
     end
   end
